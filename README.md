@@ -24,6 +24,12 @@ Voice-directed warehousing (Vocollect/Zebra) directs predefined pick paths with 
 
 Same agent core, same pipeline — only the persona context (system prompt + tool scope) and the audio transport differ.
 
+## Omnivision dashboard
+
+![Omnivision dashboard — Supplier Chase view](assets/omnivision-dashboard.png)
+
+The Supplier Chase view: KPI tiles track overdue, in-flight, and resolved POs across the board; each card carries its status chip, a one-click **Chase** button, and — once a call has run — the new ETA and the full agent–supplier transcript inline (see PO-8852). The sidebar switches between the three personas: Supplier Chase, Floor Ops, and Manager Insights. Everything updates live over Supabase Realtime as calls resolve.
+
 ## How it works
 
 ```
