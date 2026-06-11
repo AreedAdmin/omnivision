@@ -37,6 +37,10 @@ audio in ──▶ AssemblyAI Universal-Streaming (STT + end-of-turn detection)
 - **Claude is the reasoning layer, split by latency:** `claude-sonnet-4-6` handles live spoken turns (sub-second first token matters); `claude-opus-4-8` does post-call structured extraction (`{status, eta, reason, confidence}` via JSON schema) where correctness of the DB write is everything. Low-confidence extractions route to *needs review* instead of silently updating.
 - **Pipecat** wires the pipeline (turn-taking, barge-in, transports); **Supabase** is the system of record, with Realtime pushing PO-status changes to the dashboard; **FastAPI** hosts it all; **Vite + React** dashboard.
 
+### Data model
+
+![Database schema](assets/db-schema.png)
+
 **Supplier calls run in local mode by default** — no phone number needed. "Chase" rings a simulated call in the browser; whoever plays the supplier clicks **Answer as supplier** and speaks into the mic. Same pipeline, transcripts, and extraction as real telephony; the Twilio Media Streams path ships in the codebase (`CALL_MODE=twilio`) as the production deployment story.
 
 ## Run it
