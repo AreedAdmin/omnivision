@@ -71,6 +71,17 @@ Open **http://localhost:5173** in Chrome. Verify health: `curl localhost:8000/he
 2. **Manager** tab → *"which products are below reorder point?"* → follow up with *"and which of those have an open PO already?"* — context carries over.
 3. **Inbound** tab → PO-8841 is red **Overdue** → click **Chase** → click **Answer as supplier** → say: *"Atlas Trading. Yes — that order got held up, we had a raw-material shortage. It's shipping this Friday."* → the agent converses, hangs up, and the card flips to **Delayed — ETA …** live, with the full transcript logged.
 
+### A supplier chase, end to end
+
+![Call log on a PO card](assets/call-log.png)
+
+What happened on this card, in order:
+
+1. **The agent spoke first** — it dialed out and opened with the PO context preloaded: order number, product, quantity, and the fact it's overdue, then asked for status and a new delivery date. Its own speech is transcribed into the log (**Agent:** line).
+2. **The supplier answered** — *"The items are going to be arriving tomorrow."* AssemblyAI transcribed the spoken reply in real time (**Supplier:** line).
+3. **The call was logged** — the full two-sided transcript persists with the PO and renders right on the card, an audit trail of the conversation.
+4. **The order status changed automatically** — Claude Opus extracted `{status, eta}` from the transcript, the PO flipped to **DELAYED**, and the extracted **New ETA 2026-06-12** appears against the original expected date. No human transcribed or typed anything.
+
 Troubleshooting: `PGRST106` errors mean the `assemblyai` schema isn't exposed (step 2b); a card flipping to *Needs review* means extraction confidence was low — speak clearly and re-Chase. The server terminal logs every transcript and extraction.
 
 ## Repo layout
