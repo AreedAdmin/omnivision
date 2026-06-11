@@ -63,6 +63,14 @@ async def api_pos() -> JSONResponse:
     return JSONResponse(state)
 
 
+@app.get("/api/po/{po_number}")
+async def api_po_detail(po_number: str) -> JSONResponse:
+    detail = await asyncio.to_thread(db.get_po_detail, po_number)
+    if not detail:
+        return JSONResponse({"error": f"PO {po_number} not found"}, status_code=404)
+    return JSONResponse(detail)
+
+
 @app.post("/api/chase/{po_number}")
 async def chase(po_number: str) -> JSONResponse:
     po = await asyncio.to_thread(db.get_po_by_number, po_number)

@@ -6,121 +6,176 @@
 <title>Omnivision — Control Room</title>
 <style>
   :root {
-    --bg: #0a0d12; --bg2: #0d1117; --panel: #141a22; --panel2: #11161d;
-    --border: #232b36; --border2: #2d3742;
-    --text: #e6edf3; --muted: #8b98a8; --faint: #5b6675;
-    --accent: #58a6ff; --accent2: #1f6feb;
-    --open: #388bfd; --overdue: #f85149; --chasing: #e3b341;
-    --delayed: #db6d28; --ok: #3fb950; --review: #a371f7;
+    --bg: #f4f6f8; --panel: #ffffff; --panel2: #fafbfc;
+    --border: #e3e6ea; --border2: #d3d8df;
+    --text: #1c2127; --muted: #5f6b7c; --faint: #8f99a8;
+    --accent: #2d72d2; --accent-d: #215db0;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --shadow: 0 1px 2px rgba(16,22,26,.06), 0 2px 8px rgba(16,22,26,.05);
+    --shadow-lg: 0 8px 24px rgba(16,22,26,.12), 0 2px 6px rgba(16,22,26,.08);
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body { margin: 0; background: var(--bg); color: var(--text);
-    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
-    display: grid; grid-template-columns: 248px 1fr; }
+    font: 13.5px/1.55 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    display: grid; grid-template-columns: 240px 1fr;
+    -webkit-font-smoothing: antialiased; }
+
+  /* status tag palette */
+  .tag { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+    padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+  .t-overdue { background: #fce9e6; color: #c23030; }
+  .t-open { background: #e7f0fd; color: #2d72d2; }
+  .t-chasing { background: #fbf0e1; color: #bf7326; }
+  .t-delayed { background: #fbefe1; color: #c2710c; }
+  .t-confirmed_on_time,.t-shipped,.t-received { background: #e4f2e9; color: #1c6e42; }
+  .t-needs_review { background: #ece9f9; color: #5642a6; }
 
   /* ---------- sidebar ---------- */
-  aside { background: var(--panel2); border-right: 1px solid var(--border);
-    display: flex; flex-direction: column; padding: 18px 14px; gap: 6px; height: 100vh; position: sticky; top: 0; }
-  .brand { display: flex; align-items: center; gap: 11px; padding: 6px 8px 16px; }
-  .logo { width: 34px; height: 34px; border-radius: 9px;
-    background: linear-gradient(135deg, var(--accent2), #8957e5); display: grid; place-items: center; }
-  .logo svg { width: 19px; height: 19px; }
-  .brand .name { font-size: 16px; font-weight: 700; letter-spacing: .2px; }
-  .brand .tag { font-size: 11px; color: var(--faint); }
-  .navlabel { font-size: 10.5px; text-transform: uppercase; letter-spacing: .09em;
-    color: var(--faint); padding: 14px 10px 6px; font-weight: 700; }
-  .nav { display: flex; align-items: center; gap: 11px; padding: 9px 11px; border-radius: 9px;
-    color: var(--muted); cursor: pointer; font-weight: 550; font-size: 13.5px; position: relative; }
-  .nav svg { width: 17px; height: 17px; flex: none; opacity: .85; }
-  .nav:hover { background: var(--panel); color: var(--text); }
-  .nav.active { background: linear-gradient(90deg, rgba(31,111,235,.18), rgba(31,111,235,.04));
-    color: #fff; }
-  .nav.active::before { content: ""; position: absolute; left: -14px; top: 8px; bottom: 8px;
-    width: 3px; border-radius: 0 3px 3px 0; background: var(--accent); }
-  .nav.soon { cursor: default; opacity: .55; }
-  .nav .pill { margin-left: auto; font-size: 9.5px; text-transform: uppercase; letter-spacing: .05em;
-    background: var(--border2); color: var(--muted); padding: 2px 6px; border-radius: 999px; font-weight: 700; }
-  .nav .count { margin-left: auto; font-size: 11px; background: var(--overdue); color: #fff;
-    min-width: 19px; text-align: center; padding: 1px 6px; border-radius: 999px; font-weight: 700; }
+  aside { background: var(--panel); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 16px 12px; gap: 3px; height: 100vh; position: sticky; top: 0; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 14px; }
+  .logo { width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), #5b3fb0); display: grid; place-items: center; }
+  .logo svg { width: 18px; height: 18px; }
+  .brand .name { font-size: 15px; font-weight: 750; letter-spacing: .2px; }
+  .brand .tag2 { font-size: 11px; color: var(--faint); font-weight: 500; }
+  .navlabel { font-size: 10px; text-transform: uppercase; letter-spacing: .09em;
+    color: var(--faint); padding: 14px 10px 5px; font-weight: 700; }
+  .nav { display: flex; align-items: center; gap: 10px; padding: 8px 11px; border-radius: 7px;
+    color: var(--muted); cursor: pointer; font-weight: 550; font-size: 13px; position: relative; }
+  .nav svg { width: 16px; height: 16px; flex: none; opacity: .8; }
+  .nav:hover { background: var(--bg); color: var(--text); }
+  .nav.active { background: #eaf2fd; color: var(--accent-d); font-weight: 650; }
+  .nav.active svg { opacity: 1; color: var(--accent); }
+  .nav.soon { cursor: default; opacity: .6; }
+  .nav .pill { margin-left: auto; font-size: 9px; text-transform: uppercase; letter-spacing: .05em;
+    background: var(--bg); color: var(--faint); padding: 2px 6px; border-radius: 999px; font-weight: 700; border: 1px solid var(--border); }
+  .nav .count { margin-left: auto; font-size: 11px; background: #c23030; color: #fff;
+    min-width: 18px; text-align: center; padding: 1px 6px; border-radius: 999px; font-weight: 700; }
   .side-foot { margin-top: auto; border-top: 1px solid var(--border); padding-top: 12px;
-    display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; }
-  .avatar { width: 30px; height: 30px; border-radius: 50%; background: #233; display: grid;
-    place-items: center; font-weight: 700; color: var(--accent); font-size: 12px; }
-  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); margin-left: auto;
-    box-shadow: 0 0 0 3px rgba(63,185,80,.18); animation: pulse 1.8s infinite; }
+    display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 12px; }
+  .avatar { width: 28px; height: 28px; border-radius: 6px; background: #eaf2fd; display: grid;
+    place-items: center; font-weight: 700; color: var(--accent); font-size: 11px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #1c9c5b; margin-left: auto;
+    box-shadow: 0 0 0 3px rgba(28,156,91,.15); animation: pulse 1.8s infinite; }
   @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .4 } }
 
   /* ---------- main ---------- */
   main { height: 100vh; overflow-y: auto; }
   .topbar { display: flex; align-items: flex-end; gap: 16px; padding: 22px 30px 0; }
-  .topbar h1 { margin: 0; font-size: 20px; font-weight: 700; }
-  .topbar .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .topbar h1 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -.2px; }
+  .topbar .sub { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
   .topbar .live { margin-left: auto; color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 7px; }
-  .topbar .live i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); animation: pulse 1.6s infinite; }
+  .topbar .live i { width: 7px; height: 7px; border-radius: 50%; background: #1c9c5b; animation: pulse 1.6s infinite; }
 
-  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 20px 30px 6px; }
-  .kpi { background: var(--panel); border: 1px solid var(--border); border-radius: 13px; padding: 15px 17px; }
-  .kpi .k { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 650; }
-  .kpi .v { font-size: 27px; font-weight: 750; margin-top: 5px; line-height: 1; }
-  .kpi .v.overdue { color: var(--overdue); } .kpi .v.chasing { color: var(--chasing); }
-  .kpi .v.ok { color: var(--ok); } .kpi .v.accent { color: var(--accent); }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 18px 30px 4px; }
+  .kpi { background: var(--panel); border: 1px solid var(--border); border-radius: 9px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .kpi .k { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 650; }
+  .kpi .v { font-size: 26px; font-weight: 750; margin-top: 4px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .kpi .v.overdue { color: #c23030; } .kpi .v.chasing { color: #bf7326; }
+  .kpi .v.ok { color: #1c6e42; } .kpi .v.accent { color: var(--accent); }
 
-  .tabs { display: flex; gap: 6px; padding: 16px 30px 0; }
-  .tab { padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  .tabs { display: flex; gap: 4px; padding: 16px 30px 0; }
+  .tab { padding: 6px 13px; border-radius: 6px; font-size: 12.5px; font-weight: 600;
     color: var(--muted); cursor: pointer; border: 1px solid transparent; }
-  .tab:hover { color: var(--text); }
-  .tab.active { background: var(--panel); border-color: var(--border2); color: #fff; }
+  .tab:hover { color: var(--text); background: var(--panel); }
+  .tab.active { background: var(--panel); border-color: var(--border2); color: var(--text); box-shadow: var(--shadow); }
 
-  .grid { padding: 18px 30px 40px; display: grid; gap: 16px;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
-  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
-    padding: 17px; display: flex; flex-direction: column; gap: 11px; transition: border-color .2s; }
-  .card:hover { border-color: var(--border2); }
-  .card.flash { animation: flash 1.3s ease; }
-  @keyframes flash { 0% { box-shadow: 0 0 0 2px var(--ok); border-color: var(--ok); } 100% { box-shadow: none; } }
+  .grid { padding: 16px 30px 40px; display: grid; gap: 13px;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 15px 16px; display: flex; flex-direction: column; gap: 9px; cursor: pointer;
+    box-shadow: var(--shadow); transition: box-shadow .15s, border-color .15s, transform .05s; }
+  .card:hover { box-shadow: var(--shadow-lg); border-color: var(--border2); }
+  .card:active { transform: translateY(1px); }
+  .card.flash { animation: flash 1.4s ease; }
+  @keyframes flash { 0% { box-shadow: 0 0 0 2px #1c9c5b; border-color: #1c9c5b; } 100% { box-shadow: var(--shadow); } }
   .rowx { display: flex; align-items: center; gap: 9px; }
-  .po { font-size: 16px; font-weight: 700; }
-  .chip { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
-    padding: 3px 9px; border-radius: 999px; }
-  .chip.open { background: rgba(56,139,253,.16); color: #79b8ff; }
-  .chip.overdue { background: rgba(248,81,73,.16); color: #ff7b72; }
-  .chip.chasing { background: rgba(227,179,65,.18); color: #e3b341; }
-  .chip.delayed { background: rgba(219,109,40,.18); color: #f0883e; }
-  .chip.confirmed_on_time, .chip.shipped, .chip.received { background: rgba(63,185,80,.16); color: #56d364; }
-  .chip.needs_review { background: rgba(163,113,247,.18); color: #c297ff; }
-  .meta { color: var(--muted); font-size: 13px; }
+  .po { font-size: 14.5px; font-weight: 700; font-family: var(--mono); letter-spacing: -.3px; }
+  .meta { color: var(--muted); font-size: 12.5px; }
   .meta b { color: var(--text); font-weight: 600; }
-  button.chase { margin-left: auto; background: var(--accent2); color: #fff; border: 0;
-    border-radius: 8px; padding: 7px 15px; font-weight: 650; cursor: pointer; font-size: 13px; }
-  button.chase:hover { background: var(--accent); }
-  button.chase:disabled { opacity: .45; cursor: default; }
-  .eta { background: var(--panel2); border-left: 3px solid var(--delayed); padding: 9px 12px;
-    border-radius: 7px; font-size: 13px; }
-  .transcript { border-top: 1px dashed var(--border2); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
-  .turn { font-size: 12.5px; }
-  .turn .who { font-weight: 700; }
-  .turn.agent .who { color: var(--accent); } .turn.supplier .who { color: var(--chasing); }
+  .meta .mono { font-family: var(--mono); }
+  button.chase { margin-left: auto; background: var(--accent); color: #fff; border: 1px solid var(--accent-d);
+    border-radius: 6px; padding: 5px 13px; font-weight: 600; cursor: pointer; font-size: 12.5px; }
+  button.chase:hover { background: var(--accent-d); }
+  button.chase:disabled { opacity: .5; cursor: default; }
+  .etaline { background: var(--panel2); border: 1px solid var(--border); border-left: 3px solid #c2710c;
+    padding: 7px 11px; border-radius: 6px; font-size: 12.5px; }
+  .hint { color: var(--faint); font-size: 11.5px; }
   .empty { color: var(--muted); padding: 50px; text-align: center; grid-column: 1/-1; }
 
-  /* ---------- call modal ---------- */
-  .overlay { position: fixed; inset: 0; background: rgba(3,6,10,.66); backdrop-filter: blur(3px);
-    display: none; align-items: center; justify-content: center; z-index: 20; }
+  /* ---------- PO detail drawer ---------- */
+  .scrim { position: fixed; inset: 0; background: rgba(16,22,26,.28); opacity: 0; pointer-events: none;
+    transition: opacity .18s; z-index: 30; }
+  .scrim.show { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; top: 0; right: 0; height: 100vh; width: 560px; max-width: 94vw;
+    background: var(--panel); border-left: 1px solid var(--border2); box-shadow: var(--shadow-lg);
+    transform: translateX(100%); transition: transform .22s cubic-bezier(.4,0,.2,1); z-index: 31;
+    display: flex; flex-direction: column; }
+  .drawer.show { transform: translateX(0); }
+  .drawer .dhead { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); }
+  .drawer .dhead .top { display: flex; align-items: center; gap: 10px; }
+  .drawer .dhead .dpo { font-size: 19px; font-weight: 750; font-family: var(--mono); letter-spacing: -.4px; }
+  .drawer .dhead .dsub { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  .closex { margin-left: auto; width: 30px; height: 30px; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--panel); cursor: pointer; color: var(--muted); font-size: 16px; line-height: 1; }
+  .closex:hover { background: var(--bg); color: var(--text); }
+  .dbody { overflow-y: auto; padding: 18px 24px 40px; }
+  .sec { margin-top: 22px; }
+  .sec:first-child { margin-top: 4px; }
+  .sec h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint);
+    font-weight: 700; margin: 0 0 11px; }
+  .dl { display: grid; grid-template-columns: 130px 1fr; gap: 7px 12px; }
+  .dl dt { color: var(--muted); font-size: 12.5px; }
+  .dl dd { margin: 0; font-size: 12.5px; }
+  .dl dd.mono { font-family: var(--mono); }
+
+  /* timeline */
+  .timeline { position: relative; padding-left: 20px; }
+  .timeline::before { content: ""; position: absolute; left: 5px; top: 4px; bottom: 4px; width: 2px; background: var(--border); }
+  .ev { position: relative; padding: 0 0 16px; }
+  .ev:last-child { padding-bottom: 0; }
+  .ev .node { position: absolute; left: -20px; top: 2px; width: 12px; height: 12px; border-radius: 50%;
+    border: 2px solid var(--panel); background: var(--muted); box-shadow: 0 0 0 1px var(--border2); }
+  .ev .node.blue { background: #2d72d2; } .ev .node.green { background: #1c9c5b; }
+  .ev .node.orange { background: #c2710c; } .ev .node.red { background: #c23030; }
+  .ev .node.violet { background: #5642a6; }
+  .ev .lab { font-weight: 600; font-size: 13px; }
+  .ev .ts { color: var(--faint); font-size: 11.5px; font-family: var(--mono); margin-top: 1px; }
+  .ev .det { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+
+  /* call cards */
+  .callcard { border: 1px solid var(--border); border-radius: 9px; padding: 13px 14px; margin-bottom: 12px; background: var(--panel2); }
+  .callcard .ch { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+  .callcard .ch .t { font-weight: 650; font-size: 12.5px; }
+  .callcard .ch .when { margin-left: auto; color: var(--faint); font-size: 11.5px; font-family: var(--mono); }
+  .turn { font-size: 12.5px; margin: 4px 0; }
+  .turn .who { font-weight: 700; }
+  .turn.agent .who { color: var(--accent); } .turn.supplier .who { color: #bf7326; }
+  .extract { margin-top: 10px; border-top: 1px dashed var(--border2); padding-top: 9px; font-size: 12.5px; }
+  .extract .ek { color: var(--muted); }
+  .quote { color: var(--muted); font-style: italic; border-left: 2px solid var(--border2); padding-left: 8px; margin: 4px 0; font-size: 12px; }
+  .nocall { color: var(--faint); font-size: 12.5px; }
+
+  /* ---------- record-call modal ---------- */
+  .overlay { position: fixed; inset: 0; background: rgba(16,22,26,.34); backdrop-filter: blur(2px);
+    display: none; align-items: center; justify-content: center; z-index: 40; }
   .overlay.show { display: flex; }
-  .modal { background: var(--panel); border: 1px solid var(--border2); border-radius: 18px;
-    width: 480px; max-width: 92vw; padding: 26px; display: flex; flex-direction: column; gap: 16px;
-    box-shadow: 0 20px 60px rgba(0,0,0,.5); }
-  .modal h2 { margin: 0; font-size: 17px; display: flex; align-items: center; gap: 9px; }
-  .modal h2 .ring { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); animation: pulse 1.1s infinite; }
-  .agentline { background: var(--bg2); border: 1px solid var(--border); border-radius: 11px; padding: 15px; font-size: 14px; }
-  .agentline .lbl { color: var(--accent); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
-  .controls { display: flex; align-items: center; gap: 10px; }
-  .controls button { border: 0; border-radius: 9px; padding: 9px 16px; font-weight: 650; cursor: pointer; font-size: 13px; }
-  .controls .ghost { background: var(--panel2); color: var(--text); border: 1px solid var(--border2); }
-  .controls .rec { background: var(--overdue); color: #fff; }
+  .modal { background: var(--panel); border: 1px solid var(--border2); border-radius: 12px;
+    width: 460px; max-width: 92vw; padding: 24px; display: flex; flex-direction: column; gap: 15px; box-shadow: var(--shadow-lg); }
+  .modal h2 { margin: 0; font-size: 16px; display: flex; align-items: center; gap: 9px; }
+  .modal h2 .ring { width: 9px; height: 9px; border-radius: 50%; background: #1c9c5b; animation: pulse 1.1s infinite; }
+  .agentline { background: var(--panel2); border: 1px solid var(--border); border-radius: 9px; padding: 13px; font-size: 13.5px; }
+  .agentline .lbl { color: var(--accent); font-weight: 700; font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
+  .controls { display: flex; align-items: center; gap: 9px; }
+  .controls button { border-radius: 7px; padding: 8px 15px; font-weight: 600; cursor: pointer; font-size: 12.5px; }
+  .controls .ghost { background: var(--panel); color: var(--text); border: 1px solid var(--border2); }
+  .controls .ghost:hover { background: var(--bg); }
+  .controls .rec { background: #c23030; color: #fff; border: 1px solid #a82a2a; }
   .controls .spacer { margin-left: auto; }
-  .status { color: var(--muted); font-size: 13px; min-height: 18px; }
-  .reclive { color: var(--overdue); font-weight: 700; }
+  .status { color: var(--muted); font-size: 12.5px; min-height: 18px; }
+  .reclive { color: #c23030; font-weight: 700; }
   .reclive::before { content: "●"; margin-right: 6px; animation: pulse 1s infinite; }
 </style>
 </head>
@@ -129,70 +184,57 @@
 <aside>
   <div class="brand">
     <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 21V11h6v10"/></svg></div>
-    <div><div class="name">Omnivision</div><div class="tag">Warehouse OS</div></div>
+    <div><div class="name">Omnivision</div><div class="tag2">Warehouse OS</div></div>
   </div>
-
   <div class="navlabel">Modules</div>
   <div class="nav active">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
     Supplier Chase <span class="count" id="nav-overdue">0</span>
   </div>
-  <div class="nav soon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-    Floor Ops <span class="pill">soon</span>
-  </div>
-  <div class="nav soon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/></svg>
-    Manager Insights <span class="pill">soon</span>
-  </div>
-
+  <div class="nav soon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg> Floor Ops <span class="pill">soon</span></div>
+  <div class="nav soon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/></svg> Manager Insights <span class="pill">soon</span></div>
   <div class="navlabel">Data</div>
-  <div class="nav soon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 7l-8-4-8 4 8 4 8-4z"/><path d="M4 7v10l8 4 8-4V7"/></svg>
-    Suppliers
-  </div>
-  <div class="nav soon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>
-    Audit Log
-  </div>
-  <div class="nav soon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6 1.65 1.65 0 0 0 10 3.09V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9z"/></svg>
-    Settings
-  </div>
-
-  <div class="side-foot">
-    <div class="avatar">SH</div>
-    <div><div style="color:var(--text);font-weight:600">Procurement</div>Omnivision · live</div>
-    <span class="dot"></span>
-  </div>
+  <div class="nav soon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 7l-8-4-8 4 8 4 8-4z"/><path d="M4 7v10l8 4 8-4V7"/></svg> Suppliers</div>
+  <div class="nav soon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg> Audit Log</div>
+  <div class="nav soon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9z"/></svg> Settings</div>
+  <div class="side-foot"><div class="avatar">SH</div><div><div style="color:var(--text);font-weight:600">Procurement</div>Omnivision · live</div><span class="dot"></span></div>
 </aside>
 
 <main>
   <div class="topbar">
-    <div>
-      <h1>Supplier Chase</h1>
-      <div class="sub">Autonomous PO follow-up · AssemblyAI + Claude Opus 4.8</div>
-    </div>
+    <div><h1>Supplier Chase</h1><div class="sub">Autonomous PO follow-up · AssemblyAI + Claude Opus 4.8</div></div>
     <div class="live"><i></i> live</div>
   </div>
-
   <div class="kpis">
     <div class="kpi"><div class="k">Overdue</div><div class="v overdue" id="kpi-overdue">–</div></div>
     <div class="kpi"><div class="k">Chasing now</div><div class="v chasing" id="kpi-chasing">–</div></div>
     <div class="kpi"><div class="k">Resolved</div><div class="v ok" id="kpi-resolved">–</div></div>
     <div class="kpi"><div class="k">Total POs</div><div class="v accent" id="kpi-total">–</div></div>
   </div>
-
   <div class="tabs" id="tabs">
     <div class="tab active" data-f="all">All</div>
     <div class="tab" data-f="overdue">Overdue</div>
     <div class="tab" data-f="open">Open</div>
     <div class="tab" data-f="resolved">Resolved</div>
   </div>
-
   <div class="grid" id="board"><div class="empty">Loading purchase orders…</div></div>
 </main>
 
+<!-- PO detail drawer -->
+<div class="scrim" id="scrim" onclick="closeDetail()"></div>
+<div class="drawer" id="drawer">
+  <div class="dhead">
+    <div class="top">
+      <span class="dpo" id="d-po">—</span>
+      <span class="tag" id="d-tag"></span>
+      <button class="closex" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="dsub" id="d-sub"></div>
+  </div>
+  <div class="dbody" id="d-body"></div>
+</div>
+
+<!-- record-call modal -->
 <div class="overlay" id="overlay">
   <div class="modal">
     <h2><span class="ring"></span><span id="m-title">Calling supplier…</span></h2>
@@ -207,56 +249,46 @@
 </div>
 
 <script>
-const STATUS_LABEL = {
-  open: "Open", overdue: "Overdue", chasing: "Chasing", delayed: "Delayed",
-  confirmed_on_time: "On time", shipped: "Shipped", received: "Received",
-  needs_review: "Needs review",
-};
+const LABEL = { open:"Open", overdue:"Overdue", chasing:"Chasing", delayed:"Delayed",
+  confirmed_on_time:"On time", shipped:"Shipped", received:"Received", needs_review:"Needs review" };
 const RESOLVED = ["delayed","confirmed_on_time","shipped","received","needs_review"];
 let prevStatus = {}, currentFilter = "all", lastPos = [];
 let active = null, mediaRecorder = null, chunks = [];
+let detailPO = null, detailTimer = null;
+
+const esc = s => (s||"").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtTs = s => { try { return new Date(s).toLocaleString([], {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}); } catch(e){ return s; } };
 
 document.getElementById("tabs").addEventListener("click", e => {
   const t = e.target.closest(".tab"); if (!t) return;
   document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
   t.classList.add("active"); currentFilter = t.dataset.f; render(lastPos);
 });
-
 function matchFilter(po) {
   if (currentFilter === "all") return true;
   if (currentFilter === "overdue") return po.status === "overdue";
   if (currentFilter === "open") return po.status === "open";
   if (currentFilter === "resolved") return RESOLVED.includes(po.status);
-  return true;
 }
 
-function escapeHtml(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
-
+// ---------- board ----------
 function card(po) {
   const flipped = prevStatus[po.po_number] && prevStatus[po.po_number] !== po.status;
-  const chip = `<span class="chip ${po.status}">${STATUS_LABEL[po.status] || po.status}</span>`;
+  const tag = `<span class="tag t-${po.status}">${LABEL[po.status] || po.status}</span>`;
   const busy = po.status === "chasing";
   const chaseable = po.status === "overdue" || po.status === "needs_review";
-  const eta = po.eta_date
-    ? `<div class="eta">📦 New ETA <b>${po.eta_date}</b>${po.delay_reason ? " — " + escapeHtml(po.delay_reason) : ""}</div>` : "";
-  const turns = ((po.call && po.call.transcript) || []).map(t =>
-    `<div class="turn ${t.speaker}"><span class="who">${t.speaker==="agent"?"Agent":"Supplier"}:</span> ${escapeHtml(t.text)}</div>`).join("");
-  const transcript = turns ? `<div class="transcript">${turns}</div>` : "";
+  const eta = po.eta_date ? `<div class="etaline">📦 New ETA <b class="mono">${po.eta_date}</b>${po.delay_reason?" — "+esc(po.delay_reason):""}</div>` : "";
   const btn = (chaseable || busy)
-    ? `<button class="chase" onclick="chase('${po.po_number}')" ${busy?"disabled":""}>${busy?"Chasing…":"Chase"}</button>`
-    : "";
-  return `<div class="card ${flipped?"flash":""}">
-      <div class="rowx"><span class="po">${po.po_number}</span> ${chip} ${btn}</div>
-      <div class="meta"><b>${escapeHtml(po.product)||"—"}</b> · ${po.qty} units · ${escapeHtml(po.supplier)||"—"}</div>
-      <div class="meta">Expected <b>${po.expected_date}</b></div>
-      ${eta}${transcript}</div>`;
+    ? `<button class="chase" onclick="event.stopPropagation();chase('${po.po_number}')" ${busy?"disabled":""}>${busy?"Chasing…":"Chase"}</button>` : "";
+  return `<div class="card ${flipped?"flash":""}" onclick="openDetail('${po.po_number}')">
+      <div class="rowx"><span class="po">${po.po_number}</span> ${tag} ${btn}</div>
+      <div class="meta"><b>${esc(po.product)||"—"}</b> · ${po.qty} units · ${esc(po.supplier)||"—"}</div>
+      <div class="meta">Expected <b class="mono">${po.expected_date}</b></div>
+      ${eta}<div class="hint">Click for details, call history & status log →</div></div>`;
 }
-
 function render(pos) {
   const shown = pos.filter(matchFilter);
-  const board = document.getElementById("board");
-  board.innerHTML = shown.length ? shown.map(card).join("") : '<div class="empty">Nothing in this view.</div>';
-  // KPIs
+  document.getElementById("board").innerHTML = shown.length ? shown.map(card).join("") : '<div class="empty">Nothing in this view.</div>';
   const c = s => pos.filter(p => p.status === s).length;
   document.getElementById("kpi-overdue").textContent = c("overdue");
   document.getElementById("kpi-chasing").textContent = c("chasing");
@@ -265,13 +297,94 @@ function render(pos) {
   document.getElementById("nav-overdue").textContent = c("overdue") + c("chasing");
   pos.forEach(p => prevStatus[p.po_number] = p.status);
 }
-
 async function refresh() {
-  try { lastPos = await (await fetch("/api/pos")).json(); render(lastPos); }
-  catch (e) { /* keep last render */ }
+  try { lastPos = await (await fetch("/api/pos")).json(); render(lastPos); } catch(e){}
 }
 
-// ---------- call flow ----------
+// ---------- PO detail drawer ----------
+function eventView(ev) {
+  const d = ev.detail || {};
+  const map = {
+    chase_started:  ["blue",   "Chase initiated", "Agent dialled the supplier"],
+    call_completed: ["green",  "Call completed", d.summary || ""],
+    status_changed: ["orange", "Status updated → " + (d.status || "?"),
+                      [d.eta_date?("ETA "+d.eta_date):"", d.delay_reason?("Reason: "+d.delay_reason):"",
+                       d.confidence?("confidence "+d.confidence):""].filter(Boolean).join(" · ")],
+    flagged_review: ["violet", "Flagged for human review", d.summary || d.reason || ""],
+    call_failed:    ["red",    "Call failed", d.reason || ""],
+  };
+  const [color, lab, det] = map[ev.event] || ["", ev.event, ""];
+  return `<div class="ev"><span class="node ${color}"></span>
+    <div class="lab">${esc(lab)}</div><div class="ts">${fmtTs(ev.created_at)}</div>
+    ${det?`<div class="det">${esc(det)}</div>`:""}</div>`;
+}
+function callView(c) {
+  const turns = (c.transcript||[]).map(t =>
+    `<div class="turn ${t.speaker}"><span class="who">${t.speaker==="agent"?"Agent":"Supplier"}:</span> ${esc(t.text)}</div>`).join("");
+  const x = c.extraction;
+  let extract = "";
+  if (x) {
+    const quotes = (x.supplier_quotes||[]).map(q => `<div class="quote">“${esc(q)}”</div>`).join("");
+    extract = `<div class="extract">
+      <div><span class="ek">Extraction:</span> <b>${esc(x.status||"")}</b>${x.eta_date?` · ETA <span class="mono">${x.eta_date}</span>`:""}${x.delay_reason?` · ${esc(x.delay_reason)}`:""} <span class="ek">(${esc(x.confidence||"")} confidence)</span></div>
+      ${x.summary?`<div class="det">${esc(x.summary)}</div>`:""}${quotes}</div>`;
+  }
+  const outcome = c.outcome || "in progress";
+  const oc = outcome==="completed"?"t-confirmed_on_time":(outcome==="in progress"?"t-chasing":"t-overdue");
+  return `<div class="callcard">
+    <div class="ch"><span class="tag ${oc}">${outcome}</span>
+      <span class="t">Outbound call</span><span class="when">${fmtTs(c.started_at)}</span></div>
+    ${turns||'<div class="nocall">No transcript captured.</div>'}${extract}</div>`;
+}
+function renderDetail(d) {
+  document.getElementById("d-po").textContent = d.po_number;
+  const tagEl = document.getElementById("d-tag");
+  tagEl.className = "tag t-" + d.status; tagEl.textContent = LABEL[d.status] || d.status;
+  document.getElementById("d-sub").textContent = `${d.product || "—"} · ${d.supplier || "—"}`;
+  const chaseable = d.status === "overdue" || d.status === "needs_review";
+  const events = d.events && d.events.length ? `<div class="timeline">${d.events.map(eventView).join("")}</div>`
+    : `<div class="nocall">No activity yet.</div>`;
+  const calls = d.calls && d.calls.length ? d.calls.map(callView).join("")
+    : `<div class="nocall">No calls yet — hit Chase to start one.</div>`;
+  document.getElementById("d-body").innerHTML = `
+    ${chaseable ? `<button class="chase" style="margin:0 0 4px" onclick="chase('${d.po_number}')">🎙 Chase this PO</button>`:""}
+    <div class="sec"><h3>Order details</h3>
+      <dl class="dl">
+        <dt>Product</dt><dd>${esc(d.product)||"—"}</dd>
+        <dt>Supplier</dt><dd>${esc(d.supplier)||"—"}</dd>
+        <dt>Contact</dt><dd>${esc(d.supplier_contact)||"—"}</dd>
+        <dt>Quantity</dt><dd class="mono">${d.qty} units</dd>
+        <dt>Expected date</dt><dd class="mono">${d.expected_date}</dd>
+        <dt>Status</dt><dd><span class="tag t-${d.status}">${LABEL[d.status]||d.status}</span></dd>
+        <dt>New ETA</dt><dd class="mono">${d.eta_date || "—"}</dd>
+        <dt>Delay reason</dt><dd>${esc(d.delay_reason)||"—"}</dd>
+        <dt>Last updated</dt><dd class="mono">${d.updated_at?fmtTs(d.updated_at):"—"}</dd>
+      </dl></div>
+    <div class="sec"><h3>Status &amp; activity log</h3>${events}</div>
+    <div class="sec"><h3>Call history</h3>${calls}</div>`;
+}
+async function loadDetail() {
+  if (!detailPO) return;
+  try {
+    const r = await fetch(`/api/po/${detailPO}`);
+    if (r.ok) renderDetail(await r.json());
+  } catch(e){}
+}
+function openDetail(po) {
+  detailPO = po;
+  document.getElementById("scrim").classList.add("show");
+  document.getElementById("drawer").classList.add("show");
+  loadDetail();
+  clearInterval(detailTimer);
+  detailTimer = setInterval(loadDetail, 1500);   // live updates during a call
+}
+function closeDetail() {
+  detailPO = null; clearInterval(detailTimer);
+  document.getElementById("scrim").classList.remove("show");
+  document.getElementById("drawer").classList.remove("show");
+}
+
+// ---------- chase / record ----------
 async function chase(po) {
   try {
     const r = await fetch(`/api/chase/${po}`, { method: "POST" });
@@ -305,12 +418,8 @@ async function toggleRecord() {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaRecorder = new MediaRecorder(stream); chunks = [];
     mediaRecorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
-    mediaRecorder.onstop = async () => {
-      stream.getTracks().forEach(t => t.stop());
-      await sendAnswer(new Blob(chunks, { type: "audio/webm" }));
-    };
-    speechSynthesis.cancel();
-    mediaRecorder.start();
+    mediaRecorder.onstop = async () => { stream.getTracks().forEach(t => t.stop()); await sendAnswer(new Blob(chunks, { type: "audio/webm" })); };
+    speechSynthesis.cancel(); mediaRecorder.start();
     document.getElementById("m-rec").textContent = "⏹ Stop & send";
     document.getElementById("m-status").innerHTML = '<span class="reclive">Recording — speak your answer</span>';
   } catch (e) { document.getElementById("m-status").textContent = "Mic access denied: " + e; }
@@ -324,7 +433,7 @@ async function sendAnswer(blob) {
     const data = await r.json();
     if (!r.ok) throw new Error(data.error || r.status);
     document.getElementById("m-status").textContent = "Done — updating the board…";
-    setTimeout(closeModal, 800);
+    setTimeout(() => { closeModal(); loadDetail(); }, 800);
   } catch (e) {
     document.getElementById("m-status").textContent = "Failed: " + e;
     document.getElementById("m-rec").disabled = false;

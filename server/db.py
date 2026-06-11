@@ -335,3 +335,42 @@ def dashboard_state() -> list[dict]:
             } if call else None,
         })
     return out
+
+
+def calls_for_po(po_id: str) -> list[dict]:
+    """All calls for a PO (newest first), each with its transcript turns."""
+    calls = (_t("calls").select("*").eq("po_id", po_id)
+             .order("started_at", desc=True).execute().data or [])
+    for c in calls:
+        c["transcript"] = transcript_turns(c["id"])
+    return calls
+
+
+def events_for_po(po_id: str) -> list[dict]:
+    """Full audit/status-change log for a PO (newest first)."""
+    return (_t("po_events").select("event, detail, created_at")
+            .eq("po_id", po_id).order("created_at", desc=True).execute().data or [])
+
+
+def get_po_detail(po_number: str) -> Optional[dict]:
+    """Everything the PO detail drawer needs: order fields + calls + status log."""
+    po = get_po_by_number(po_number)
+    if not po:
+        return None
+    supplier = po.get("suppliers") or {}
+    return {
+        "po_number": po["po_number"],
+        "product": (po.get("products") or {}).get("name"),
+        "supplier": supplier.get("name"),
+        "supplier_contact": supplier.get("contact_name"),
+        "supplier_phone": supplier.get("phone"),
+        "qty": po["qty"],
+        "expected_date": po["expected_date"],
+        "status": po["status"],
+        "eta_date": po.get("eta_date"),
+        "delay_reason": po.get("delay_reason"),
+        "created_at": po.get("created_at"),
+        "updated_at": po.get("updated_at"),
+        "calls": calls_for_po(po["id"]),
+        "events": events_for_po(po["id"]),
+    }
