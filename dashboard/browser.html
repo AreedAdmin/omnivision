@@ -3,94 +3,204 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Omnivision — Supplier Chase</title>
+<title>Omnivision — Control Room</title>
 <style>
   :root {
-    --bg: #0d1117; --panel: #161b22; --border: #30363d; --text: #e6edf3;
-    --muted: #8b949e; --accent: #58a6ff;
-    --open: #388bfd; --overdue: #f85149; --chasing: #d29922;
+    --bg: #0a0d12; --bg2: #0d1117; --panel: #141a22; --panel2: #11161d;
+    --border: #232b36; --border2: #2d3742;
+    --text: #e6edf3; --muted: #8b98a8; --faint: #5b6675;
+    --accent: #58a6ff; --accent2: #1f6feb;
+    --open: #388bfd; --overdue: #f85149; --chasing: #e3b341;
     --delayed: #db6d28; --ok: #3fb950; --review: #a371f7;
   }
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body { margin: 0; background: var(--bg); color: var(--text);
-    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  header { padding: 20px 28px; border-bottom: 1px solid var(--border);
-    display: flex; align-items: baseline; gap: 14px; }
-  header h1 { font-size: 19px; margin: 0; font-weight: 650; }
-  header .sub { color: var(--muted); font-size: 13px; }
-  .live { margin-left: auto; color: var(--muted); font-size: 12px; }
-  .live .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-    background: var(--ok); margin-right: 6px; animation: pulse 1.6s infinite; }
-  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
-  main { padding: 24px 28px; display: grid; gap: 18px;
-    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); }
-  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
-    padding: 18px; display: flex; flex-direction: column; gap: 12px; }
-  .card.flash { animation: flash 1.2s ease; }
-  @keyframes flash { 0% { box-shadow: 0 0 0 2px var(--ok); } 100% { box-shadow: none; } }
-  .rowx { display: flex; align-items: center; gap: 10px; }
-  .po { font-size: 17px; font-weight: 650; }
-  .chip { font-size: 11px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .04em; padding: 3px 9px; border-radius: 999px; }
-  .chip.open { background: var(--open); color:#fff; }
-  .chip.overdue { background: var(--overdue); color:#fff; }
-  .chip.chasing { background: var(--chasing); color:#0d1117; }
-  .chip.delayed { background: var(--delayed); color:#fff; }
-  .chip.confirmed_on_time, .chip.shipped, .chip.received { background: var(--ok); color:#fff; }
-  .chip.needs_review { background: var(--review); color:#fff; }
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+    display: grid; grid-template-columns: 248px 1fr; }
+
+  /* ---------- sidebar ---------- */
+  aside { background: var(--panel2); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 18px 14px; gap: 6px; height: 100vh; position: sticky; top: 0; }
+  .brand { display: flex; align-items: center; gap: 11px; padding: 6px 8px 16px; }
+  .logo { width: 34px; height: 34px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent2), #8957e5); display: grid; place-items: center; }
+  .logo svg { width: 19px; height: 19px; }
+  .brand .name { font-size: 16px; font-weight: 700; letter-spacing: .2px; }
+  .brand .tag { font-size: 11px; color: var(--faint); }
+  .navlabel { font-size: 10.5px; text-transform: uppercase; letter-spacing: .09em;
+    color: var(--faint); padding: 14px 10px 6px; font-weight: 700; }
+  .nav { display: flex; align-items: center; gap: 11px; padding: 9px 11px; border-radius: 9px;
+    color: var(--muted); cursor: pointer; font-weight: 550; font-size: 13.5px; position: relative; }
+  .nav svg { width: 17px; height: 17px; flex: none; opacity: .85; }
+  .nav:hover { background: var(--panel); color: var(--text); }
+  .nav.active { background: linear-gradient(90deg, rgba(31,111,235,.18), rgba(31,111,235,.04));
+    color: #fff; }
+  .nav.active::before { content: ""; position: absolute; left: -14px; top: 8px; bottom: 8px;
+    width: 3px; border-radius: 0 3px 3px 0; background: var(--accent); }
+  .nav.soon { cursor: default; opacity: .55; }
+  .nav .pill { margin-left: auto; font-size: 9.5px; text-transform: uppercase; letter-spacing: .05em;
+    background: var(--border2); color: var(--muted); padding: 2px 6px; border-radius: 999px; font-weight: 700; }
+  .nav .count { margin-left: auto; font-size: 11px; background: var(--overdue); color: #fff;
+    min-width: 19px; text-align: center; padding: 1px 6px; border-radius: 999px; font-weight: 700; }
+  .side-foot { margin-top: auto; border-top: 1px solid var(--border); padding-top: 12px;
+    display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; background: #233; display: grid;
+    place-items: center; font-weight: 700; color: var(--accent); font-size: 12px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); margin-left: auto;
+    box-shadow: 0 0 0 3px rgba(63,185,80,.18); animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .4 } }
+
+  /* ---------- main ---------- */
+  main { height: 100vh; overflow-y: auto; }
+  .topbar { display: flex; align-items: flex-end; gap: 16px; padding: 22px 30px 0; }
+  .topbar h1 { margin: 0; font-size: 20px; font-weight: 700; }
+  .topbar .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .topbar .live { margin-left: auto; color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 7px; }
+  .topbar .live i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); animation: pulse 1.6s infinite; }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 20px 30px 6px; }
+  .kpi { background: var(--panel); border: 1px solid var(--border); border-radius: 13px; padding: 15px 17px; }
+  .kpi .k { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 650; }
+  .kpi .v { font-size: 27px; font-weight: 750; margin-top: 5px; line-height: 1; }
+  .kpi .v.overdue { color: var(--overdue); } .kpi .v.chasing { color: var(--chasing); }
+  .kpi .v.ok { color: var(--ok); } .kpi .v.accent { color: var(--accent); }
+
+  .tabs { display: flex; gap: 6px; padding: 16px 30px 0; }
+  .tab { padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
+    color: var(--muted); cursor: pointer; border: 1px solid transparent; }
+  .tab:hover { color: var(--text); }
+  .tab.active { background: var(--panel); border-color: var(--border2); color: #fff; }
+
+  .grid { padding: 18px 30px 40px; display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 17px; display: flex; flex-direction: column; gap: 11px; transition: border-color .2s; }
+  .card:hover { border-color: var(--border2); }
+  .card.flash { animation: flash 1.3s ease; }
+  @keyframes flash { 0% { box-shadow: 0 0 0 2px var(--ok); border-color: var(--ok); } 100% { box-shadow: none; } }
+  .rowx { display: flex; align-items: center; gap: 9px; }
+  .po { font-size: 16px; font-weight: 700; }
+  .chip { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+    padding: 3px 9px; border-radius: 999px; }
+  .chip.open { background: rgba(56,139,253,.16); color: #79b8ff; }
+  .chip.overdue { background: rgba(248,81,73,.16); color: #ff7b72; }
+  .chip.chasing { background: rgba(227,179,65,.18); color: #e3b341; }
+  .chip.delayed { background: rgba(219,109,40,.18); color: #f0883e; }
+  .chip.confirmed_on_time, .chip.shipped, .chip.received { background: rgba(63,185,80,.16); color: #56d364; }
+  .chip.needs_review { background: rgba(163,113,247,.18); color: #c297ff; }
   .meta { color: var(--muted); font-size: 13px; }
   .meta b { color: var(--text); font-weight: 600; }
-  button { background: var(--accent); color: #0d1117; border: 0; border-radius: 8px;
-    padding: 7px 16px; font-weight: 650; cursor: pointer; }
-  button.ghost { background: #21262d; color: var(--text); }
-  button.rec { background: var(--overdue); color:#fff; }
-  button:disabled { opacity: .5; cursor: default; }
-  .spacer { margin-left: auto; }
-  .eta { background: #21262d; border-left: 3px solid var(--delayed); padding: 8px 12px;
-    border-radius: 6px; font-size: 13px; }
-  .transcript { border-top: 1px dashed var(--border); padding-top: 10px;
-    display: flex; flex-direction: column; gap: 6px; }
-  .turn { font-size: 13px; }
+  button.chase { margin-left: auto; background: var(--accent2); color: #fff; border: 0;
+    border-radius: 8px; padding: 7px 15px; font-weight: 650; cursor: pointer; font-size: 13px; }
+  button.chase:hover { background: var(--accent); }
+  button.chase:disabled { opacity: .45; cursor: default; }
+  .eta { background: var(--panel2); border-left: 3px solid var(--delayed); padding: 9px 12px;
+    border-radius: 7px; font-size: 13px; }
+  .transcript { border-top: 1px dashed var(--border2); padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .turn { font-size: 12.5px; }
   .turn .who { font-weight: 700; }
-  .turn.agent .who { color: var(--accent); }
-  .turn.supplier .who { color: var(--chasing); }
-  .empty { color: var(--muted); padding: 40px; text-align: center; }
-  /* call modal */
-  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6);
-    display: none; align-items: center; justify-content: center; z-index: 10; }
+  .turn.agent .who { color: var(--accent); } .turn.supplier .who { color: var(--chasing); }
+  .empty { color: var(--muted); padding: 50px; text-align: center; grid-column: 1/-1; }
+
+  /* ---------- call modal ---------- */
+  .overlay { position: fixed; inset: 0; background: rgba(3,6,10,.66); backdrop-filter: blur(3px);
+    display: none; align-items: center; justify-content: center; z-index: 20; }
   .overlay.show { display: flex; }
-  .modal { background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
-    width: 460px; max-width: 92vw; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
-  .modal h2 { margin: 0; font-size: 17px; }
-  .agentline { background: #0d1117; border: 1px solid var(--border); border-radius: 10px;
-    padding: 14px; font-size: 14px; }
-  .agentline .lbl { color: var(--accent); font-weight: 700; font-size: 12px;
-    text-transform: uppercase; letter-spacing: .05em; }
+  .modal { background: var(--panel); border: 1px solid var(--border2); border-radius: 18px;
+    width: 480px; max-width: 92vw; padding: 26px; display: flex; flex-direction: column; gap: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+  .modal h2 { margin: 0; font-size: 17px; display: flex; align-items: center; gap: 9px; }
+  .modal h2 .ring { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); animation: pulse 1.1s infinite; }
+  .agentline { background: var(--bg2); border: 1px solid var(--border); border-radius: 11px; padding: 15px; font-size: 14px; }
+  .agentline .lbl { color: var(--accent); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
   .controls { display: flex; align-items: center; gap: 10px; }
+  .controls button { border: 0; border-radius: 9px; padding: 9px 16px; font-weight: 650; cursor: pointer; font-size: 13px; }
+  .controls .ghost { background: var(--panel2); color: var(--text); border: 1px solid var(--border2); }
+  .controls .rec { background: var(--overdue); color: #fff; }
+  .controls .spacer { margin-left: auto; }
   .status { color: var(--muted); font-size: 13px; min-height: 18px; }
   .reclive { color: var(--overdue); font-weight: 700; }
   .reclive::before { content: "●"; margin-right: 6px; animation: pulse 1s infinite; }
 </style>
 </head>
 <body>
-<header>
-  <h1>Omnivision</h1>
-  <span class="sub">Autonomous supplier-chase &nbsp;·&nbsp; AssemblyAI + Claude Opus 4.8</span>
-  <span class="live"><span class="dot"></span>live</span>
-</header>
-<main id="board"><div class="empty">Loading purchase orders…</div></main>
+
+<aside>
+  <div class="brand">
+    <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 21V11h6v10"/></svg></div>
+    <div><div class="name">Omnivision</div><div class="tag">Warehouse OS</div></div>
+  </div>
+
+  <div class="navlabel">Modules</div>
+  <div class="nav active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+    Supplier Chase <span class="count" id="nav-overdue">0</span>
+  </div>
+  <div class="nav soon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    Floor Ops <span class="pill">soon</span>
+  </div>
+  <div class="nav soon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/></svg>
+    Manager Insights <span class="pill">soon</span>
+  </div>
+
+  <div class="navlabel">Data</div>
+  <div class="nav soon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 7l-8-4-8 4 8 4 8-4z"/><path d="M4 7v10l8 4 8-4V7"/></svg>
+    Suppliers
+  </div>
+  <div class="nav soon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>
+    Audit Log
+  </div>
+  <div class="nav soon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6 1.65 1.65 0 0 0 10 3.09V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9z"/></svg>
+    Settings
+  </div>
+
+  <div class="side-foot">
+    <div class="avatar">SH</div>
+    <div><div style="color:var(--text);font-weight:600">Procurement</div>Omnivision · live</div>
+    <span class="dot"></span>
+  </div>
+</aside>
+
+<main>
+  <div class="topbar">
+    <div>
+      <h1>Supplier Chase</h1>
+      <div class="sub">Autonomous PO follow-up · AssemblyAI + Claude Opus 4.8</div>
+    </div>
+    <div class="live"><i></i> live</div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="k">Overdue</div><div class="v overdue" id="kpi-overdue">–</div></div>
+    <div class="kpi"><div class="k">Chasing now</div><div class="v chasing" id="kpi-chasing">–</div></div>
+    <div class="kpi"><div class="k">Resolved</div><div class="v ok" id="kpi-resolved">–</div></div>
+    <div class="kpi"><div class="k">Total POs</div><div class="v accent" id="kpi-total">–</div></div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-f="all">All</div>
+    <div class="tab" data-f="overdue">Overdue</div>
+    <div class="tab" data-f="open">Open</div>
+    <div class="tab" data-f="resolved">Resolved</div>
+  </div>
+
+  <div class="grid" id="board"><div class="empty">Loading purchase orders…</div></div>
+</main>
 
 <div class="overlay" id="overlay">
   <div class="modal">
-    <h2 id="m-title">Calling supplier…</h2>
-    <div class="agentline">
-      <div class="lbl">Agent</div>
-      <div id="m-question"></div>
-    </div>
+    <h2><span class="ring"></span><span id="m-title">Calling supplier…</span></h2>
+    <div class="agentline"><div class="lbl">Agent</div><div id="m-question"></div></div>
     <div class="controls">
-      <button class="ghost" id="m-replay" onclick="speakQuestion()">🔊 Replay</button>
+      <button class="ghost" onclick="speakQuestion()">🔊 Replay</button>
       <button class="rec" id="m-rec" onclick="toggleRecord()">🎙 Record answer</button>
-      <button class="ghost spacer" id="m-close" onclick="closeModal()">Cancel</button>
+      <button class="ghost spacer" onclick="closeModal()">Cancel</button>
     </div>
     <div class="status" id="m-status"></div>
   </div>
@@ -98,49 +208,67 @@
 
 <script>
 const STATUS_LABEL = {
-  open: "Open", overdue: "Overdue", chasing: "Chasing…", delayed: "Delayed",
+  open: "Open", overdue: "Overdue", chasing: "Chasing", delayed: "Delayed",
   confirmed_on_time: "On time", shipped: "Shipped", received: "Received",
   needs_review: "Needs review",
 };
-let prevStatus = {};
-let active = null;            // {call_id, question, po_number}
-let mediaRecorder = null, chunks = [];
+const RESOLVED = ["delayed","confirmed_on_time","shipped","received","needs_review"];
+let prevStatus = {}, currentFilter = "all", lastPos = [];
+let active = null, mediaRecorder = null, chunks = [];
 
-// ---------- board ----------
+document.getElementById("tabs").addEventListener("click", e => {
+  const t = e.target.closest(".tab"); if (!t) return;
+  document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+  t.classList.add("active"); currentFilter = t.dataset.f; render(lastPos);
+});
+
+function matchFilter(po) {
+  if (currentFilter === "all") return true;
+  if (currentFilter === "overdue") return po.status === "overdue";
+  if (currentFilter === "open") return po.status === "open";
+  if (currentFilter === "resolved") return RESOLVED.includes(po.status);
+  return true;
+}
+
+function escapeHtml(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
 function card(po) {
   const flipped = prevStatus[po.po_number] && prevStatus[po.po_number] !== po.status;
   const chip = `<span class="chip ${po.status}">${STATUS_LABEL[po.status] || po.status}</span>`;
   const busy = po.status === "chasing";
+  const chaseable = po.status === "overdue" || po.status === "needs_review";
   const eta = po.eta_date
-    ? `<div class="eta">📦 New ETA <b>${po.eta_date}</b>${po.delay_reason ? " — " + escapeHtml(po.delay_reason) : ""}</div>`
-    : "";
+    ? `<div class="eta">📦 New ETA <b>${po.eta_date}</b>${po.delay_reason ? " — " + escapeHtml(po.delay_reason) : ""}</div>` : "";
   const turns = ((po.call && po.call.transcript) || []).map(t =>
-    `<div class="turn ${t.speaker}"><span class="who">${t.speaker === "agent" ? "Agent" : "Supplier"}:</span> ${escapeHtml(t.text)}</div>`
-  ).join("");
+    `<div class="turn ${t.speaker}"><span class="who">${t.speaker==="agent"?"Agent":"Supplier"}:</span> ${escapeHtml(t.text)}</div>`).join("");
   const transcript = turns ? `<div class="transcript">${turns}</div>` : "";
-  return `
-    <div class="card ${flipped ? "flash" : ""}">
-      <div class="rowx"><span class="po">${po.po_number}</span> ${chip}
-        <button class="spacer" onclick="chase('${po.po_number}')" ${busy ? "disabled" : ""}>
-          ${busy ? "Chasing…" : "Chase"}</button>
-      </div>
-      <div class="meta"><b>${escapeHtml(po.product) || "—"}</b> · ${po.qty} units · ${escapeHtml(po.supplier) || "—"}</div>
+  const btn = (chaseable || busy)
+    ? `<button class="chase" onclick="chase('${po.po_number}')" ${busy?"disabled":""}>${busy?"Chasing…":"Chase"}</button>`
+    : "";
+  return `<div class="card ${flipped?"flash":""}">
+      <div class="rowx"><span class="po">${po.po_number}</span> ${chip} ${btn}</div>
+      <div class="meta"><b>${escapeHtml(po.product)||"—"}</b> · ${po.qty} units · ${escapeHtml(po.supplier)||"—"}</div>
       <div class="meta">Expected <b>${po.expected_date}</b></div>
-      ${eta}${transcript}
-    </div>`;
+      ${eta}${transcript}</div>`;
 }
 
-function escapeHtml(s) {
-  return (s || "").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+function render(pos) {
+  const shown = pos.filter(matchFilter);
+  const board = document.getElementById("board");
+  board.innerHTML = shown.length ? shown.map(card).join("") : '<div class="empty">Nothing in this view.</div>';
+  // KPIs
+  const c = s => pos.filter(p => p.status === s).length;
+  document.getElementById("kpi-overdue").textContent = c("overdue");
+  document.getElementById("kpi-chasing").textContent = c("chasing");
+  document.getElementById("kpi-resolved").textContent = pos.filter(p => RESOLVED.includes(p.status)).length;
+  document.getElementById("kpi-total").textContent = pos.length;
+  document.getElementById("nav-overdue").textContent = c("overdue") + c("chasing");
+  pos.forEach(p => prevStatus[p.po_number] = p.status);
 }
 
 async function refresh() {
-  try {
-    const pos = await (await fetch("/api/pos")).json();
-    const board = document.getElementById("board");
-    board.innerHTML = pos.length ? pos.map(card).join("") : '<div class="empty">No purchase orders.</div>';
-    pos.forEach(p => prevStatus[p.po_number] = p.status);
-  } catch (e) { /* keep last render */ }
+  try { lastPos = await (await fetch("/api/pos")).json(); render(lastPos); }
+  catch (e) { /* keep last render */ }
 }
 
 // ---------- call flow ----------
@@ -149,78 +277,54 @@ async function chase(po) {
     const r = await fetch(`/api/chase/${po}`, { method: "POST" });
     const data = await r.json();
     if (!r.ok) { alert("Chase failed: " + (data.error || r.status)); return; }
-    active = data;
-    openModal(data);
+    active = data; openModal(data);
   } catch (e) { alert("Chase failed: " + e); }
   refresh();
 }
-
-function openModal(data) {
-  document.getElementById("m-title").textContent =
-    `Calling ${data.supplier || "supplier"} — ${data.po_number}`;
-  document.getElementById("m-question").textContent = data.question;
+function openModal(d) {
+  document.getElementById("m-title").textContent = `Calling ${d.supplier||"supplier"} — ${d.po_number}`;
+  document.getElementById("m-question").textContent = d.question;
   document.getElementById("m-status").textContent = "";
-  setRecBtn(false);
+  document.getElementById("m-rec").disabled = false;
+  document.getElementById("m-rec").textContent = "🎙 Record answer";
   document.getElementById("overlay").classList.add("show");
   speakQuestion();
 }
-
 function closeModal() {
   if (mediaRecorder && mediaRecorder.state === "recording") mediaRecorder.stop();
-  document.getElementById("overlay").classList.remove("show");
-  active = null;
-  refresh();
+  document.getElementById("overlay").classList.remove("show"); active = null; refresh();
 }
-
 function speakQuestion() {
   if (!active || !window.speechSynthesis) return;
   speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(active.question);
-  u.rate = 1.0;
-  speechSynthesis.speak(u);
+  const u = new SpeechSynthesisUtterance(active.question); u.rate = 1.0; speechSynthesis.speak(u);
 }
-
-function setRecBtn(recording) {
-  const b = document.getElementById("m-rec");
-  b.textContent = recording ? "⏹ Stop & send" : "🎙 Record answer";
-  b.classList.toggle("rec", true);
-}
-
 async function toggleRecord() {
-  if (mediaRecorder && mediaRecorder.state === "recording") {
-    mediaRecorder.stop();
-    return;
-  }
+  if (mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.stop(); return; }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
-    chunks = [];
+    mediaRecorder = new MediaRecorder(stream); chunks = [];
     mediaRecorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
     mediaRecorder.onstop = async () => {
       stream.getTracks().forEach(t => t.stop());
-      const blob = new Blob(chunks, { type: "audio/webm" });
-      await sendAnswer(blob);
+      await sendAnswer(new Blob(chunks, { type: "audio/webm" }));
     };
-    speechSynthesis.cancel();          // don't record the agent's own voice
+    speechSynthesis.cancel();
     mediaRecorder.start();
-    setRecBtn(true);
+    document.getElementById("m-rec").textContent = "⏹ Stop & send";
     document.getElementById("m-status").innerHTML = '<span class="reclive">Recording — speak your answer</span>';
-  } catch (e) {
-    document.getElementById("m-status").textContent = "Mic access denied: " + e;
-  }
+  } catch (e) { document.getElementById("m-status").textContent = "Mic access denied: " + e; }
 }
-
 async function sendAnswer(blob) {
   document.getElementById("m-rec").disabled = true;
   document.getElementById("m-status").textContent = "Transcribing with AssemblyAI & extracting…";
   try {
-    const fd = new FormData();
-    fd.append("audio", blob, "answer.webm");
+    const fd = new FormData(); fd.append("audio", blob, "answer.webm");
     const r = await fetch(`/api/answer/${active.call_id}`, { method: "POST", body: fd });
     const data = await r.json();
     if (!r.ok) throw new Error(data.error || r.status);
     document.getElementById("m-status").textContent = "Done — updating the board…";
-    setTimeout(() => { closeModal(); }, 800);
+    setTimeout(closeModal, 800);
   } catch (e) {
     document.getElementById("m-status").textContent = "Failed: " + e;
     document.getElementById("m-rec").disabled = false;

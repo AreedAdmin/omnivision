@@ -16,13 +16,15 @@
 - *"Anything below reorder point?"* → "...sunflower oil already has an open PO — but it's six days overdue from Atlas Trading."
 - *"What's the sale rate on basmati rice?"* → answer → *"So when do I run out?"* → agent computes days-of-cover from context. Narration: "That's reasoning over its own previous answers — not a lookup."
 
-**[1:35–2:40] Beat 3 — The showpiece (Inbound tab).**
-- "PO-8841, six days overdue. Nobody enjoys this phone call. So our agent makes it."
-- Click **Chase** → phone rings audibly on stage → teammate ("Atlas Trading") answers on speaker.
+**[1:35–2:40] Beat 3 — The showpiece (Inbound tab). _(LOCAL MODE — plan change: no Twilio number)_**
+- "PO-8841, six days overdue. Nobody enjoys this call. So our agent makes it."
+- Click **Chase** → the call panel "rings" on screen → teammate ("Atlas Trading") clicks **Answer as supplier** and speaks into the mic — the room hears both sides through the speakers (agent voice = TTS out loud, supplier = teammate live).
+- Narration while it rings: "In production this dials the supplier's real phone over Twilio — same agent, same conversation; today it's our supplier on the line locally."
 - The room hears the two-way conversation **and reads the live transcript streaming on screen** (AssemblyAI real-time, both speakers).
-- Agent confirms back, says goodbye, hangs up.
+- Agent confirms back, says goodbye, ends the call itself.
 - Beat of silence → **the PO card flips live**: *"Delayed — ETA Friday — raw-material shortage"* + timeline entry + transcript link.
 - Narration: "Conversation held, logged verbatim, order status updated, audit trail written. Zero human minutes."
+- Staging: teammate at the demo laptop's mic (half-duplex prevents echo), or on a second laptop on the same network for more theater.
 
 **[2:40–3:00] Close.**
 > "One agent brain, two voice channels, three teams — built on AssemblyAI streaming end to end: it transcribed me on the floor, the manager's questions, and both sides of a live phone call. The backbone pattern means the next persona is a system prompt away."
@@ -44,8 +46,10 @@ Rules for the teammate: quiet room, speak at normal pace, don't improvise, don't
 
 | Risk | Likelihood | Mitigation |
 |---|---|---|
-| Venue network blocks/degrades WS or ngrok | Med | Phone hotspot fallback tested in advance; ngrok URL verified morning-of |
-| Live call fails (carrier, Twilio hiccup) | Low-Med | **Fallback video** of full successful run, recorded night before; narrate over it without apology |
+| ~~Venue network blocks ngrok / Twilio~~ | — | **Eliminated by local mode** — everything runs on localhost except the AssemblyAI/Anthropic/Cartesia/Supabase APIs |
+| Live call beat fails (mic, API hiccup) | Low | **Fallback video** of full successful run, recorded night before; narrate over it without apology |
+| Agent hears its own voice via speakers | Low | Half-duplex gate in the call hook (mic muted while agent audio plays); rehearse speaker volume |
+| Judge asks "but is it a real phone call?" | Med | Honest answer: telephony mode is in the codebase (`CALL_MODE=twilio`, Twilio Media Streams) — local mode is a venue constraint (no number), not an architecture gap. Show `pipelines/telephony.py` if pressed |
 | STT mishears scripted lines | Low | Scripted phrases rehearsed; seed data matches script numbers; re-ask path ("eight or eighty?") exists |
 | Latency feels draggy on stage | Med | Filler utterances on tool turns; latency instrumentation tuned in rehearsal; keep system prompts lean |
 | Demo data drifted from rehearsals | Med | `make reset-demo` restores exact seed state; run before every rehearsal and before stage |

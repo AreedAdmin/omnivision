@@ -7,15 +7,19 @@ Rule: **Phase 1 (voice spike) before any persona logic** — it's the highest-ri
 > Items marked `[x]` are written; unchecked items are the *runtime verification*
 > steps that need real keys/devices — they are the actual remaining work.
 
+> **⚠️ PLAN CHANGE:** supplier calls run in **local mode** (browser simulated call,
+> `/ws/call`) — no Twilio number needed. Twilio/ngrok items below are struck out;
+> they return only if `CALL_MODE=twilio` is ever used (deployment roadmap).
+
 ## Phase 0 — Setup (~2h)
 
-- [ ] `[DEMO]` Create accounts/keys: AssemblyAI, Anthropic, Twilio (+ buy a phone number), Cartesia, Supabase keys → fill `.env` + `dashboard/.env`
+- [ ] `[DEMO]` Create accounts/keys: AssemblyAI, Anthropic, Cartesia, Supabase → fill `.env` + `dashboard/.env` (~~Twilio~~ not needed in local mode)
 - [x] `[DEMO]` Repo scaffold per layout in [02-architecture.md](02-architecture.md): `server/` (FastAPI + Pipecat), `dashboard/` (Vite+React+TS), `supabase/`
 - [x] `[DEMO]` `.env` + config loading; `.env.example` committed, real keys gitignored
 - [ ] `[DEMO]` Run `supabase/schema.sql` in the SQL editor + **expose the `assemblyai` schema** (Settings → API → Exposed schemas)
-- [ ] `[DEMO]` Run `supabase/seed.sql`; set Atlas Trading's phone to the teammate's number (`UPDATE-ME-SUPPLIER-PHONE`)
+- [ ] `[DEMO]` Run `supabase/seed.sql` (supplier phone placeholder is fine in local mode)
 - [x] `[DEMO]` Realtime publication for `purchase_orders`, `calls`, `call_transcripts`, `variance_logs` (in schema.sql)
-- [ ] `[DEMO]` ngrok up; public WSS reachable; `PUBLIC_HOST` set
+- ~~[ ] ngrok / `PUBLIC_HOST`~~ — not needed in local mode
 - [x] `[NICE]` Demo reset = re-run `seed.sql` (idempotent truncate + insert)
 
 ## Phase 1 — Voice pipeline spike (~4h) — de-risk before anything else
@@ -24,10 +28,10 @@ All pipeline code is written ([pipelines/inapp.py], [pipelines/telephony.py]); t
 phase is now **runtime verification with real keys** — pipecat import paths are the
 likeliest breakage if the installed version differs (see README version note).
 
-- [ ] `[DEMO]` `make setup` succeeds; `/health` returns no missing settings
+- [ ] `[DEMO]` `make setup` succeeds; `/health` returns no missing settings (Twilio vars exempt in local mode)
 - [ ] `[DEMO]` **Channel A:** Floor tab → hold-to-talk → live transcript appears → spoken answer heard
-- [ ] `[DEMO]` **Channel B:** outbound Twilio call to own phone → media frames arrive, μ-law transcode OK, AssemblyAI transcribes callee, TTS audible to callee
-- [ ] `[DEMO]` Barge-in verified on both channels
+- [ ] `[DEMO]` **Channel B (local):** Inbound tab → Chase → "Answer as supplier" → two-way conversation works; agent doesn't transcribe its own speaker audio (half-duplex gate)
+- [ ] `[DEMO]` Barge-in verified on channel A (channel B local is half-duplex by design — no barge-in)
 - [ ] `[DEMO]` End-of-turn thresholds tuned with real speech (code defaults: 560ms ch-A, 400ms ch-B)
 - [ ] `[NICE]` Per-turn latency log line (`t_speech_end → t_llm_first_token → t_tts_first_byte`)
 
@@ -59,16 +63,18 @@ likeliest breakage if the installed version differs (see README version note).
 - [x] `[NICE]` `open_pos_report`, `top_movers`
 - [x] `[NICE]` Spoken-number formatting rules in prompt
 
-## Phase 5 — Supplier-calling agent (~5h) — the showpiece
+## Phase 5 — Supplier-calling agent (~5h) — the showpiece (LOCAL MODE)
 
-- [x] `[DEMO]` `POST /calls/initiate {po_id}`: load PO+supplier, `calls` row + context record, Twilio dial with Media Streams TwiML — `calls.py`
-- [x] `[DEMO]` Telephony pipeline with INBOUND_PROMPT interpolated from PO context (toolless except `end_call`) — `pipelines/telephony.py`
+- [x] `[DEMO]` `POST /calls/initiate {po_id}`: `calls` row + context record; returns `ctx_id` for the browser call (`CALL_MODE=local` default) — `calls.py`
+- [x] `[DEMO]` Local call pipeline `/ws/call`: INBOUND_PROMPT from PO context (toolless except `end_call`) — `pipelines/localcall.py`
+- [x] `[DEMO]` Dashboard call panel: ring state → "Answer as supplier" → live audio + Hang up — `useSupplierCall.ts`
+- [x] `[DEMO]` Half-duplex gate (mic muted while agent speaks) so the agent never hears itself
 - [x] `[DEMO]` Transcript persistence per finalized turn → `call_transcripts`
-- [x] `[DEMO]` Agent ends call after goodbye (`end_call` tool → EndFrame → Twilio hangup)
+- [x] `[DEMO]` Agent ends call after goodbye (`end_call` tool → EndFrame → WS close)
 - [x] `[DEMO]` Post-call hook: Opus 4.8 structured extraction (`PoCallExtraction`) — `agent/extraction.py`
 - [x] `[DEMO]` Confidence-gated write → `purchase_orders` + `po_events`; low confidence → `needs_review`
-- [x] `[DEMO]` `status_callback` handling: no-answer/busy/failed → `po_events: call_failed`, status back to overdue
-- [ ] `[DEMO]` **Full dry-run: chase → teammate answers scripted → status flips in DB** (needs Twilio + ngrok live)
+- [ ] `[DEMO]` **Full dry-run: chase → teammate answers scripted → status flips in DB** (needs real keys only — no Twilio)
+- [x] `[NICE]` Twilio telephony path retained for deployment story (`CALL_MODE=twilio`, `pipelines/telephony.py`, status callbacks)
 - [ ] `[NICE]` 10s-silence prompt + graceful close
 - [ ] `[NICE]` Voice-triggered chase ("chase PO 8841") from manager/inbound persona
 
