@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Omnivision — Supplier Chase</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d; --text: #e6edf3;
+    --muted: #8b949e; --accent: #58a6ff;
+    --open: #388bfd; --overdue: #f85149; --chasing: #d29922;
+    --delayed: #db6d28; --ok: #3fb950; --review: #a371f7;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 20px 28px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: baseline; gap: 14px; }
+  header h1 { font-size: 19px; margin: 0; font-weight: 650; }
+  header .sub { color: var(--muted); font-size: 13px; }
+  .live { margin-left: auto; color: var(--muted); font-size: 12px; }
+  .live .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--ok); margin-right: 6px; animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
+  main { padding: 24px 28px; display: grid; gap: 18px;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .card.flash { animation: flash 1.2s ease; }
+  @keyframes flash { 0% { box-shadow: 0 0 0 2px var(--ok); } 100% { box-shadow: none; } }
+  .row { display: flex; align-items: center; gap: 10px; }
+  .po { font-size: 17px; font-weight: 650; }
+  .chip { font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .04em; padding: 3px 9px; border-radius: 999px; }
+  .chip.open { background: var(--open); color:#fff; }
+  .chip.overdue { background: var(--overdue); color:#fff; }
+  .chip.chasing { background: var(--chasing); color:#0d1117; }
+  .chip.delayed { background: var(--delayed); color:#fff; }
+  .chip.confirmed_on_time, .chip.shipped, .chip.received { background: var(--ok); color:#fff; }
+  .chip.needs_review { background: var(--review); color:#fff; }
+  .meta { color: var(--muted); font-size: 13px; }
+  .meta b { color: var(--text); font-weight: 600; }
+  button { margin-left: auto; background: var(--accent); color: #0d1117; border: 0;
+    border-radius: 8px; padding: 7px 16px; font-weight: 650; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+  .eta { background: #21262d; border-left: 3px solid var(--delayed); padding: 8px 12px;
+    border-radius: 6px; font-size: 13px; }
+  .transcript { border-top: 1px dashed var(--border); padding-top: 10px;
+    display: flex; flex-direction: column; gap: 6px; }
+  .turn { font-size: 13px; }
+  .turn .who { font-weight: 700; }
+  .turn.agent .who { color: var(--accent); }
+  .turn.supplier .who { color: var(--chasing); }
+  .empty { color: var(--muted); padding: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Omnivision</h1>
+  <span class="sub">Autonomous supplier-chase &nbsp;·&nbsp; AssemblyAI + Claude Opus 4.8</span>
+  <span class="live"><span class="dot"></span>live</span>
+</header>
+<main id="board"><div class="empty">Loading purchase orders…</div></main>
+
+<script>
+const STATUS_LABEL = {
+  open: "Open", overdue: "Overdue", chasing: "Chasing…", delayed: "Delayed",
+  confirmed_on_time: "On time", shipped: "Shipped", received: "Received",
+  needs_review: "Needs review",
+};
+let prevStatus = {};
+
+async function chase(po, btn) {
+  btn.disabled = true; btn.textContent = "Calling…";
+  try {
+    const r = await fetch(`/api/chase/${po}`, { method: "POST" });
+    if (!r.ok) { const e = await r.json(); alert("Chase failed: " + (e.error || r.status)); }
+  } catch (e) { alert("Chase failed: " + e); }
+  setTimeout(refresh, 600);
+}
+
+function card(po) {
+  const flipped = prevStatus[po.po_number] && prevStatus[po.po_number] !== po.status;
+  const chip = `<span class="chip ${po.status}">${STATUS_LABEL[po.status] || po.status}</span>`;
+  const busy = po.status === "chasing";
+  const eta = po.eta_date
+    ? `<div class="eta">📦 New ETA <b>${po.eta_date}</b>${po.delay_reason ? " — " + escapeHtml(po.delay_reason) : ""}</div>`
+    : "";
+  const turns = ((po.call && po.call.transcript) || []).map(t =>
+    `<div class="turn ${t.speaker}"><span class="who">${t.speaker === "agent" ? "Agent" : "Supplier"}:</span> ${escapeHtml(t.text)}</div>`
+  ).join("");
+  const transcript = turns ? `<div class="transcript">${turns}</div>` : "";
+  return `
+    <div class="card ${flipped ? "flash" : ""}">
+      <div class="row"><span class="po">${po.po_number}</span> ${chip}
+        <button onclick="chase('${po.po_number}', this)" ${busy ? "disabled" : ""}>
+          ${busy ? "Chasing…" : "Chase"}</button>
+      </div>
+      <div class="meta"><b>${escapeHtml(po.product) || "—"}</b> · ${po.qty} units · ${escapeHtml(po.supplier) || "—"}</div>
+      <div class="meta">Expected <b>${po.expected_date}</b></div>
+      ${eta}${transcript}
+    </div>`;
+}
+
+function escapeHtml(s) {
+  return (s || "").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+}
+
+async function refresh() {
+  try {
+    const pos = await (await fetch("/api/pos")).json();
+    const board = document.getElementById("board");
+    board.innerHTML = pos.length ? pos.map(card).join("") : '<div class="empty">No purchase orders.</div>';
+    pos.forEach(p => prevStatus[p.po_number] = p.status);
+  } catch (e) { /* keep last render on transient error */ }
+}
+
+refresh();
+setInterval(refresh, 2000);
+</script>
+</body>
+</html>

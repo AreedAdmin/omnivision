@@ -1,0 +1,10 @@
+pipecat-ai[anthropic,assemblyai,cartesia,silero]
+fastapi
+uvicorn[standard]
+python-dotenv
+anthropic
+supabase
+twilio
+loguru
+pydantic
+python-multipart

@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/components/pushtotalk.tsx","./src/components/transcriptpane.tsx","./src/lib/audio.ts","./src/lib/supabase.ts","./src/lib/usesuppliercall.ts","./src/lib/usevoicesession.ts","./src/views/floorview.tsx","./src/views/inboundview.tsx","./src/views/managerview.tsx"],"version":"5.9.3"}

@@ -1,0 +1,12 @@
+.env
+*.env.local
+.venv/
+venv/
+__pycache__/
+*.pyc
+node_modules/
+dist/
+.DS_Store
+*.log
+.ngrok*
+dashboard/.env

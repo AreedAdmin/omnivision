@@ -1,0 +1,12 @@
+# Minimal deps for the scripted-turn demo (app_scripted.py). No Pipecat/Cartesia.
+fastapi
+uvicorn[standard]
+twilio
+assemblyai
+anthropic
+supabase
+python-dotenv
+python-multipart
+requests
+loguru
+pydantic

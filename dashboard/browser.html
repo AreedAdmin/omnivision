@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Omnivision — Supplier Chase</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d; --text: #e6edf3;
+    --muted: #8b949e; --accent: #58a6ff;
+    --open: #388bfd; --overdue: #f85149; --chasing: #d29922;
+    --delayed: #db6d28; --ok: #3fb950; --review: #a371f7;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 20px 28px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: baseline; gap: 14px; }
+  header h1 { font-size: 19px; margin: 0; font-weight: 650; }
+  header .sub { color: var(--muted); font-size: 13px; }
+  .live { margin-left: auto; color: var(--muted); font-size: 12px; }
+  .live .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--ok); margin-right: 6px; animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
+  main { padding: 24px 28px; display: grid; gap: 18px;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .card.flash { animation: flash 1.2s ease; }
+  @keyframes flash { 0% { box-shadow: 0 0 0 2px var(--ok); } 100% { box-shadow: none; } }
+  .rowx { display: flex; align-items: center; gap: 10px; }
+  .po { font-size: 17px; font-weight: 650; }
+  .chip { font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .04em; padding: 3px 9px; border-radius: 999px; }
+  .chip.open { background: var(--open); color:#fff; }
+  .chip.overdue { background: var(--overdue); color:#fff; }
+  .chip.chasing { background: var(--chasing); color:#0d1117; }
+  .chip.delayed { background: var(--delayed); color:#fff; }
+  .chip.confirmed_on_time, .chip.shipped, .chip.received { background: var(--ok); color:#fff; }
+  .chip.needs_review { background: var(--review); color:#fff; }
+  .meta { color: var(--muted); font-size: 13px; }
+  .meta b { color: var(--text); font-weight: 600; }
+  button { background: var(--accent); color: #0d1117; border: 0; border-radius: 8px;
+    padding: 7px 16px; font-weight: 650; cursor: pointer; }
+  button.ghost { background: #21262d; color: var(--text); }
+  button.rec { background: var(--overdue); color:#fff; }
+  button:disabled { opacity: .5; cursor: default; }
+  .spacer { margin-left: auto; }
+  .eta { background: #21262d; border-left: 3px solid var(--delayed); padding: 8px 12px;
+    border-radius: 6px; font-size: 13px; }
+  .transcript { border-top: 1px dashed var(--border); padding-top: 10px;
+    display: flex; flex-direction: column; gap: 6px; }
+  .turn { font-size: 13px; }
+  .turn .who { font-weight: 700; }
+  .turn.agent .who { color: var(--accent); }
+  .turn.supplier .who { color: var(--chasing); }
+  .empty { color: var(--muted); padding: 40px; text-align: center; }
+  /* call modal */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6);
+    display: none; align-items: center; justify-content: center; z-index: 10; }
+  .overlay.show { display: flex; }
+  .modal { background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    width: 460px; max-width: 92vw; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .modal h2 { margin: 0; font-size: 17px; }
+  .agentline { background: #0d1117; border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px; font-size: 14px; }
+  .agentline .lbl { color: var(--accent); font-weight: 700; font-size: 12px;
+    text-transform: uppercase; letter-spacing: .05em; }
+  .controls { display: flex; align-items: center; gap: 10px; }
+  .status { color: var(--muted); font-size: 13px; min-height: 18px; }
+  .reclive { color: var(--overdue); font-weight: 700; }
+  .reclive::before { content: "●"; margin-right: 6px; animation: pulse 1s infinite; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Omnivision</h1>
+  <span class="sub">Autonomous supplier-chase &nbsp;·&nbsp; AssemblyAI + Claude Opus 4.8</span>
+  <span class="live"><span class="dot"></span>live</span>
+</header>
+<main id="board"><div class="empty">Loading purchase orders…</div></main>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="m-title">Calling supplier…</h2>
+    <div class="agentline">
+      <div class="lbl">Agent</div>
+      <div id="m-question"></div>
+    </div>
+    <div class="controls">
+      <button class="ghost" id="m-replay" onclick="speakQuestion()">🔊 Replay</button>
+      <button class="rec" id="m-rec" onclick="toggleRecord()">🎙 Record answer</button>
+      <button class="ghost spacer" id="m-close" onclick="closeModal()">Cancel</button>
+    </div>
+    <div class="status" id="m-status"></div>
+  </div>
+</div>
+
+<script>
+const STATUS_LABEL = {
+  open: "Open", overdue: "Overdue", chasing: "Chasing…", delayed: "Delayed",
+  confirmed_on_time: "On time", shipped: "Shipped", received: "Received",
+  needs_review: "Needs review",
+};
+let prevStatus = {};
+let active = null;            // {call_id, question, po_number}
+let mediaRecorder = null, chunks = [];
+
+// ---------- board ----------
+function card(po) {
+  const flipped = prevStatus[po.po_number] && prevStatus[po.po_number] !== po.status;
+  const chip = `<span class="chip ${po.status}">${STATUS_LABEL[po.status] || po.status}</span>`;
+  const busy = po.status === "chasing";
+  const eta = po.eta_date
+    ? `<div class="eta">📦 New ETA <b>${po.eta_date}</b>${po.delay_reason ? " — " + escapeHtml(po.delay_reason) : ""}</div>`
+    : "";
+  const turns = ((po.call && po.call.transcript) || []).map(t =>
+    `<div class="turn ${t.speaker}"><span class="who">${t.speaker === "agent" ? "Agent" : "Supplier"}:</span> ${escapeHtml(t.text)}</div>`
+  ).join("");
+  const transcript = turns ? `<div class="transcript">${turns}</div>` : "";
+  return `
+    <div class="card ${flipped ? "flash" : ""}">
+      <div class="rowx"><span class="po">${po.po_number}</span> ${chip}
+        <button class="spacer" onclick="chase('${po.po_number}')" ${busy ? "disabled" : ""}>
+          ${busy ? "Chasing…" : "Chase"}</button>
+      </div>
+      <div class="meta"><b>${escapeHtml(po.product) || "—"}</b> · ${po.qty} units · ${escapeHtml(po.supplier) || "—"}</div>
+      <div class="meta">Expected <b>${po.expected_date}</b></div>
+      ${eta}${transcript}
+    </div>`;
+}
+
+function escapeHtml(s) {
+  return (s || "").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+}
+
+async function refresh() {
+  try {
+    const pos = await (await fetch("/api/pos")).json();
+    const board = document.getElementById("board");
+    board.innerHTML = pos.length ? pos.map(card).join("") : '<div class="empty">No purchase orders.</div>';
+    pos.forEach(p => prevStatus[p.po_number] = p.status);
+  } catch (e) { /* keep last render */ }
+}
+
+// ---------- call flow ----------
+async function chase(po) {
+  try {
+    const r = await fetch(`/api/chase/${po}`, { method: "POST" });
+    const data = await r.json();
+    if (!r.ok) { alert("Chase failed: " + (data.error || r.status)); return; }
+    active = data;
+    openModal(data);
+  } catch (e) { alert("Chase failed: " + e); }
+  refresh();
+}
+
+function openModal(data) {
+  document.getElementById("m-title").textContent =
+    `Calling ${data.supplier || "supplier"} — ${data.po_number}`;
+  document.getElementById("m-question").textContent = data.question;
+  document.getElementById("m-status").textContent = "";
+  setRecBtn(false);
+  document.getElementById("overlay").classList.add("show");
+  speakQuestion();
+}
+
+function closeModal() {
+  if (mediaRecorder && mediaRecorder.state === "recording") mediaRecorder.stop();
+  document.getElementById("overlay").classList.remove("show");
+  active = null;
+  refresh();
+}
+
+function speakQuestion() {
+  if (!active || !window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(active.question);
+  u.rate = 1.0;
+  speechSynthesis.speak(u);
+}
+
+function setRecBtn(recording) {
+  const b = document.getElementById("m-rec");
+  b.textContent = recording ? "⏹ Stop & send" : "🎙 Record answer";
+  b.classList.toggle("rec", true);
+}
+
+async function toggleRecord() {
+  if (mediaRecorder && mediaRecorder.state === "recording") {
+    mediaRecorder.stop();
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    chunks = [];
+    mediaRecorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+    mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(chunks, { type: "audio/webm" });
+      await sendAnswer(blob);
+    };
+    speechSynthesis.cancel();          // don't record the agent's own voice
+    mediaRecorder.start();
+    setRecBtn(true);
+    document.getElementById("m-status").innerHTML = '<span class="reclive">Recording — speak your answer</span>';
+  } catch (e) {
+    document.getElementById("m-status").textContent = "Mic access denied: " + e;
+  }
+}
+
+async function sendAnswer(blob) {
+  document.getElementById("m-rec").disabled = true;
+  document.getElementById("m-status").textContent = "Transcribing with AssemblyAI & extracting…";
+  try {
+    const fd = new FormData();
+    fd.append("audio", blob, "answer.webm");
+    const r = await fetch(`/api/answer/${active.call_id}`, { method: "POST", body: fd });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || r.status);
+    document.getElementById("m-status").textContent = "Done — updating the board…";
+    setTimeout(() => { closeModal(); }, 800);
+  } catch (e) {
+    document.getElementById("m-status").textContent = "Failed: " + e;
+    document.getElementById("m-rec").disabled = false;
+  }
+}
+
+refresh();
+setInterval(refresh, 2000);
+</script>
+</body>
+</html>
